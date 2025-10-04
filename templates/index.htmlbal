@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dicomization app</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<style>
+/* --- same styling as before --- */
+body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8f9fa; color: #222; margin: 20px; }
+h3 { margin-bottom: 20px; color: #333; }
+.container { display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+.add-form { flex: 1 1 400px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.add-form form { display: flex; flex-direction: column; gap: 12px; }
+.add-form input[type="text"], .add-form input[type="file"] { padding: 12px 14px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc; outline: none; transition: border 0.2s, box-shadow 0.2s; }
+.add-form input[type="text"]:focus, .add-form input[type="file"]:focus { border-color: #007bff; box-shadow: 0 0 6px rgba(0,123,255,0.3); }
+.file-input-wrapper { position: relative; }
+.file-input-wrapper input[type="file"] { opacity: 0; width: 100%; height: 50px; position: absolute; left: 0; top: 0; cursor: pointer; }
+.file-input-label { display: block; padding: 12px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc; background: #e9ecef; cursor: pointer; text-align: center; transition: background 0.2s, border-color 0.2s; }
+.file-input-label:hover { background: #dee2e6; border-color: #adb5bd; }
+.add-form input[type="submit"] { width: 180px; align-self: flex-start; padding: 12px 0; font-size: 16px; font-weight: 600; color: #fff; background: linear-gradient(135deg,#4a90e2,#007bff); border: none; border-radius: 8px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+.add-form input[type="submit"]:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,123,255,0.3); }
+.results { flex: 1 1 300px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); min-height: 200px; }
+.results h4 { margin-top: 0; color: #333; }
+#upload-status { font-weight: bold; color: #28a745; margin-top: 10px; word-break: break-word; }
+a.stone-link { display: inline-block; margin-top: 8px; padding: 6px 12px; background: #007bff; color: #fff; border-radius: 6px; text-decoration: none; }
+a.stone-link:hover { background: #0056b3; }
+</style>
+</head>
+<body>
+
+<h3>Dicomization app</h3>
+
+<div class="container">
+  <div class="add-form">
+    <form method="post" action="{{ url_for('dicomize_upload') }}" enctype="multipart/form-data" id="dicom-form">
+      <input type="text" name="patient_id" placeholder="Patient ID (required)" required>
+      <input type="text" name="accession" placeholder="Accession Number (optional)">
+      <input type="text" name="name" placeholder="First Name" required>
+      <input type="text" name="surname" placeholder="Last Name" required>
+      <input type="text" name="dob" placeholder="Date of Birth (DD-MM-YYYY)">
+      <input type="text" name="study_day" placeholder="Study Date (DD-MM-YYYY)">
+      <input type="text" name="study_description" placeholder="Study Description">
+
+      <div class="file-input-wrapper">
+        <label class="file-input-label" for="file-input">Select files</label>
+        <input type="file" name="file" id="file-input" multiple required>
+      </div>
+
+      <input type="submit" value="Upload DICOM">
+    </form>
+  </div>
+
+  <div class="results">
+    <h4>Upload Result</h4>
+    <div id="upload-status">No upload yet</div>
+  </div>
+</div>
+
+<script>
+const form = document.getElementById('dicom-form');
+const statusEl = document.getElementById('upload-status');
+const fileInput = document.getElementById('file-input');
+const fileLabel = document.querySelector('.file-input-label');
+
+fileInput.addEventListener('change', () => {
+  const files = Array.from(fileInput.files).map(f => f.name).join(", ");
+  fileLabel.textContent = files || "Select files";
+});
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  statusEl.innerText = "Uploading...";
+  const formData = new FormData(form);
+
+  try {
+    const resp = await fetch(form.action, { method: 'POST', body: formData });
+    const data = await resp.json();
+
+    if (resp.ok) {
+      // Show uploaded file names
+      const fileNames = Array.from(fileInput.files).map(f => f.name).join(", ");
+      statusEl.innerHTML = `Uploaded ${data.message} <br>Files: ${fileNames} <br> <a class="stone-link" href="${data.stone_link}" target="_blank">View in Stone WebViewer</a>`;
+
+      // Reset the form except Patient ID
+      form.reset();
+      fileLabel.textContent = "Select files";
+    } else {
+      statusEl.innerText = data.error || "Upload failed";
+    }
+  } catch (err) {
+    console.error(err);
+    statusEl.innerText = "Error uploading files";
+  }
+});
+</script>
+
+</body>
+</html>
