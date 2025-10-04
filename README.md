@@ -36,9 +36,9 @@ touch .env
 3. Add the following environment variables to `.env`:
 
 ```
-ORTHANC_API_URL=http://192.168.1.119:8042/instances
-ORTHANC_EXPLORER_URL=http://192.168.1.119:8042/
-STONE_URL=https://orthanc.dkortho.synology.me:4445/stone-webviewer
+ORTHANC_API_URL=http://192.168.1.119:8042/instances #put your own
+ORTHANC_EXPLORER_URL=http://192.168.1.119:8042/ #put your own
+STONE_URL=https://orthanc.dkortho.synology.me:4445/stone-webviewer #put your own
 ORTHANC_USER=your_orthanc_username
 ORTHANC_PASS=your_orthanc_password
 ```
