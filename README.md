@@ -12,6 +12,10 @@ A Flask application to convert uploaded PDF or image files into DICOM format and
 6. View uploaded study in Stone WebViewer and open Orthanc Explorer via links
 7. Environment variables used for sensitive configuration (Orthanc URL, credentials, Stone URL)
 
+## Screenshot
+
+![Dicomization App Screenshot](UI.png)
+
 ## Prerequisites
 
 - Docker
