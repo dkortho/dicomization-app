@@ -176,7 +176,6 @@ dicomization-app/
 ├── uploads/
 └── .env
 
-
 ## Notes
 
 - The `uploads/` directory should remain empty and can contain a `.gitkeep` file for Git tracking if needed.
