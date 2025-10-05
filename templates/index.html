@@ -21,10 +21,12 @@ h3 { margin-bottom: 20px; color: #333; }
 .results { flex: 1 1 300px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); min-height: 200px; }
 .results h4 { margin-top: 0; color: #333; }
 #upload-status { font-weight: bold; color: #28a745; margin-top: 10px; word-break: break-word; }
-a.stone-link { display: inline-block; margin-top: 8px; padding: 6px 12px; background: #007bff; color: #fff; border-radius: 6px; text-decoration: none; }
+a.stone-link, a.orthanc-link { display: inline-block; margin-top: 8px; padding: 6px 12px; border-radius: 6px; text-decoration: none; color: #fff; }
+a.stone-link { background: #007bff; }
 a.stone-link:hover { background: #0056b3; }
-a.orthanc-link { display: inline-block; margin-top: 8px; padding: 6px 12px; background: #28a745; color: #fff; border-radius: 6px; text-decoration: none; }
+a.orthanc-link { background: #28a745; }
 a.orthanc-link:hover { background: #1e7e34; }
+progress { width: 100%; height: 20px; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -53,6 +55,7 @@ a.orthanc-link:hover { background: #1e7e34; }
 
   <div class="results">
     <h4>Upload Result</h4>
+    <progress id="upload-progress" value="0" max="100" style="display:none;"></progress>
     <div id="upload-status">No upload yet</div>
   </div>
 </div>
@@ -62,38 +65,54 @@ const form = document.getElementById('dicom-form');
 const statusEl = document.getElementById('upload-status');
 const fileInput = document.getElementById('file-input');
 const fileLabel = document.querySelector('.file-input-label');
+const progressBar = document.getElementById('upload-progress');
 
 fileInput.addEventListener('change', () => {
   const files = Array.from(fileInput.files).map(f => f.name).join(", ");
   fileLabel.textContent = files || "Select files";
 });
 
-form.addEventListener('submit', async (e) => {
+form.addEventListener('submit', (e) => {
   e.preventDefault();
   statusEl.innerText = "Uploading...";
+  progressBar.value = 0;
+  progressBar.style.display = "block";
+
   const formData = new FormData(form);
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", form.action, true);
 
-  try {
-    const resp = await fetch(form.action, { method: 'POST', body: formData });
-    const data = await resp.json();
+  xhr.upload.addEventListener("progress", (e) => {
+    if (e.lengthComputable) {
+      const percent = (e.loaded / e.total) * 100;
+      progressBar.value = percent;
+    }
+  });
 
-    if (resp.ok) {
+  xhr.onload = () => {
+    if (xhr.status === 200) {
+      const data = JSON.parse(xhr.responseText);
       const fileNames = Array.from(fileInput.files).map(f => f.name).join(", ");
       statusEl.innerHTML = `
-        Uploaded ${data.message} <br>
+        ✅ Uploaded ${data.message} <br>
         Files: ${fileNames} <br><br>
         <a class="stone-link" href="${data.stone_link}" target="_blank">View in Stone WebViewer</a><br>
-        <a class="orthanc-link" href="${data.orthanc_explorer_link}" target="_blank">Open Orthanc Explorer</a>
+        <a class="orthanc-link" href="${data.orthanc_explorer_link}" target="_blank">Open in Orthanc</a>
       `;
       form.reset();
       fileLabel.textContent = "Select files";
+      progressBar.style.display = "none";
     } else {
-      statusEl.innerText = data.error || "Upload failed";
+      statusEl.innerText = "Upload failed";
     }
-  } catch (err) {
-    console.error(err);
+  };
+
+  xhr.onerror = () => {
     statusEl.innerText = "Error uploading files";
-  }
+    progressBar.style.display = "none";
+  };
+
+  xhr.send(formData);
 });
 </script>
 

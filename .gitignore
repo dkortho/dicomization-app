@@ -1,1 +1,21 @@
+# Ignore all files in uploads
+/uploads/*
+
+# Except the .gitkeep placeholder
+!/uploads/.gitkeep
+
+# Ignore environment files
 .env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# VSCode settings
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Logs
+*.log
