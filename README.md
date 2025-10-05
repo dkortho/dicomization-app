@@ -14,7 +14,7 @@ A Flask application to convert uploaded PDF or image files into DICOM format and
 
 ## Screenshot
 
-![Dicomization App Screenshot](UI.png)
+![Dicomization App Screenshot](UI.jpg)
 
 ## Prerequisites
 
