@@ -61,6 +61,93 @@ docker-compose up --build -d
 docker-compose logs -f dicom_app
 ```
 
+# 🩻 Dicomization App + Orthanc
+
+Παράδειγμα χρήσης με **Docker Compose** για να τρέξει το `dicomization-app` μαζί με **Orthanc**, **Orthanc Explorer 2** και **Stone WebViewer**.
+
+## Docker Compose
+
+```yaml
+version: "3.9"
+
+services:
+  orthanc:
+    image: orthancteam/orthanc:25.10.2
+    container_name: orthancdicomizer
+    ports:
+      - "8044:8042"  # Orthanc REST API
+      - "4244:4242"  # DICOM port
+    volumes:
+      - orthanc_data:/var/lib/orthanc/db
+      - orthanc_config:/etc/orthanc
+    restart: unless-stopped
+    environment:
+      ORTHANC__USER: "orthanc"
+      ORTHANC__PASSWORD: "orthanc"
+      STONE_WEB_VIEWER_PLUGIN_ENABLED: "true"
+      DICOM_WEB_PLUGIN_ENABLED: |
+        {
+          "DicomWeb": {
+            "Enable": true,
+            "PublicRoot": "/orthanc/dicom-web/"
+          }
+        }
+      ORTHANC_JSON: |
+        {
+          "Name": "Dicomization Server",
+          "StandardConfigurations": [
+            "stone-webviewer",
+            "orthanc-explorer-2"
+          ],
+          "BuiltinDecoderTranscoderOrder" : "After",
+          "OrthancExplorer2": {
+            "Enable": true,
+            "IsDefaultOrthancUI": true,
+            "ShowOrthancName": true,
+            "UiOptions": {
+              "DateFormat": "ddMMyyyy",
+              "StudyListColumns": [
+                "AccessionNumber",
+                "PatientName",
+                "PatientBirthDate",
+                "PatientID",
+                "StudyDescription",
+                "StudyDate",
+                "modalities",
+                "seriesCount"
+              ]
+            }
+          },
+          "RegisteredUsers": { "orthanc": "orthanc" },
+          "StoneWebViewer": {
+            "DateFormat": "DD/MM/YYYY",
+            "ShowNotForDiagnosticUsageDisclaimer": false,
+            "ShowInfoPanelAtStartup": "Never"
+          },
+          "OHIF": {
+            "DataSource": "dicom-web"
+          }
+        }
+
+  dicom_app:
+    image: 788773/dicomization-app:latest
+    container_name: dicom_app
+    ports:
+      - "8017:8000"
+    environment:
+      ORTHANC_API_URL: "http://192.168.1.105:8044/instances"
+      ORTHANC_EXPLORER_URL: "http://192.168.1.105:8044"
+      STONE_URL: "http://192.168.1.105:8044/stone-webviewer"
+      ORTHANC_USER: "orthanc"
+      ORTHANC_PASS: "orthanc"
+    depends_on:
+      - orthanc
+    restart: unless-stopped
+
+volumes:
+  orthanc_data:
+  orthanc_config:
+
 ## Usage
 
 1. Open the app in your browser at `http://localhost:8017`.
