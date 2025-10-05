@@ -163,7 +163,7 @@ volumes:
 5. After successful upload, the results panel will show: number of files uploaded, names of uploaded files, link to Stone WebViewer for the study, link to Orthanc Explorer.
 
 ## Project Structure
-
+```
 dicomization-app/
 ├── app.py
 ├── Dockerfile
@@ -175,7 +175,7 @@ dicomization-app/
 │   └── style.css
 ├── uploads/
 └── .env
-
+```
 ## Notes
 
 - The `uploads/` directory should remain empty and can contain a `.gitkeep` file for Git tracking if needed.
