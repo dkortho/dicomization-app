@@ -61,13 +61,14 @@ docker-compose up --build -d
 docker-compose logs -f dicom_app
 ```
 
-# 🩻 Dicomization App + Orthanc
+## 🩻 Dicomization App + Orthanc
 
 Παράδειγμα χρήσης με **Docker Compose** για να τρέξει το `dicomization-app` μαζί με **Orthanc**, **Orthanc Explorer 2** και **Stone WebViewer**.
 
-## Docker Compose
+** Docker Compose **
 
 ```yaml
+
 version: "3.9"
 
 services:
@@ -147,6 +148,8 @@ services:
 volumes:
   orthanc_data:
   orthanc_config:
+
+
 
 ## Usage
 
